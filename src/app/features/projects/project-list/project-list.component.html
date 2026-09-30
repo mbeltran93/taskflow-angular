@@ -1,0 +1,48 @@
+<section class="projects-page">
+  <div class="projects-header">
+    <h2>Mis proyectos</h2>
+    <button type="button" (click)="startCreate()">+ Nuevo proyecto</button>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+
+  @if (showForm()) {
+    <form class="project-form" [formGroup]="form" (ngSubmit)="submit()">
+      <label for="name">Nombre</label>
+      <input id="name" type="text" formControlName="name" placeholder="ej: Sitio web corporativo" />
+
+      <label for="description">Descripcion</label>
+      <textarea id="description" formControlName="description" rows="2" placeholder="De que se trata"></textarea>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="form.invalid">
+          {{ editingId() != null ? 'Guardar cambios' : 'Crear proyecto' }}
+        </button>
+        <button type="button" class="secondary" (click)="cancelForm()">Cancelar</button>
+      </div>
+    </form>
+  }
+
+  @if (loading()) {
+    <p>Cargando proyectos...</p>
+  } @else if (!projects().length) {
+    <p class="empty">Todavia no hay proyectos. Crea el primero.</p>
+  } @else {
+    <ul class="project-grid">
+      @for (project of projects(); track project.id) {
+        <li class="project-card">
+          <a [routerLink]="['/projects', project.id, 'board']" class="project-card-link">
+            <h3>{{ project.name }}</h3>
+            <p>{{ project.description || 'Sin descripcion' }}</p>
+          </a>
+          <div class="project-card-actions">
+            <button type="button" class="secondary" (click)="startEdit(project)">Editar</button>
+            <button type="button" class="danger" (click)="remove(project)">Eliminar</button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>
