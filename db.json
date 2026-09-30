@@ -1,0 +1,42 @@
+{
+  "users": [
+    { "id": 1, "username": "mbeltran", "password": "demo1234", "name": "Martina Beltran" },
+    { "id": 2, "username": "ana", "password": "demo1234", "name": "Ana Torres" }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "name": "Rediseno landing",
+      "description": "Nueva landing de marketing para el sitio principal",
+      "ownerId": 1,
+      "createdAt": "2026-08-01T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "App movil interna",
+      "description": "Herramienta de soporte para el equipo de operaciones",
+      "ownerId": 1,
+      "createdAt": "2026-08-10T10:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Migracion API",
+      "description": "Migrar los servicios legados a la nueva API de pagos",
+      "ownerId": 2,
+      "createdAt": "2026-09-01T10:00:00.000Z"
+    }
+  ],
+  "tasks": [
+    { "id": 1, "projectId": 1, "title": "Definir wireframes", "description": "Bocetar las secciones principales de la landing", "status": "DONE", "order": 0, "assignee": "Ana", "createdAt": "2026-08-01T11:00:00.000Z" },
+    { "id": 2, "projectId": 1, "title": "Maquetar hero section", "description": "HTML/SCSS del bloque principal", "status": "DONE", "order": 1, "assignee": "Martina", "createdAt": "2026-08-02T11:00:00.000Z" },
+    { "id": 3, "projectId": 1, "title": "Integrar formulario de contacto", "description": "Conectar el formulario al backend de leads", "status": "IN_PROGRESS", "order": 0, "assignee": "Martina", "createdAt": "2026-08-05T11:00:00.000Z" },
+    { "id": 4, "projectId": 1, "title": "Optimizar imagenes", "description": "Comprimir y convertir a WebP", "status": "TODO", "order": 0, "assignee": "Ana", "createdAt": "2026-08-06T11:00:00.000Z" },
+    { "id": 5, "projectId": 1, "title": "Revisar accesibilidad", "description": "Chequear contraste y navegacion por teclado", "status": "TODO", "order": 1, "assignee": "", "createdAt": "2026-08-07T11:00:00.000Z" },
+    { "id": 6, "projectId": 2, "title": "Disenar pantalla de login", "description": "Flujo de acceso para operadores", "status": "DONE", "order": 0, "assignee": "Martina", "createdAt": "2026-08-10T11:00:00.000Z" },
+    { "id": 7, "projectId": 2, "title": "Listado de tickets", "description": "Vista con filtros por estado", "status": "IN_PROGRESS", "order": 0, "assignee": "Ana", "createdAt": "2026-08-11T11:00:00.000Z" },
+    { "id": 8, "projectId": 2, "title": "Notificaciones push", "description": "Investigar proveedor y prototipo", "status": "TODO", "order": 0, "assignee": "", "createdAt": "2026-08-12T11:00:00.000Z" },
+    { "id": 9, "projectId": 3, "title": "Mapear endpoints legados", "description": "Inventario de servicios a migrar", "status": "IN_PROGRESS", "order": 0, "assignee": "Ana", "createdAt": "2026-09-01T11:00:00.000Z" },
+    { "id": 10, "projectId": 3, "title": "Definir contrato nuevo", "description": "OpenAPI de la nueva version", "status": "TODO", "order": 0, "assignee": "Ana", "createdAt": "2026-09-02T11:00:00.000Z" },
+    { "id": 11, "projectId": 3, "title": "Plan de rollback", "description": "Estrategia por si falla el corte", "status": "TODO", "order": 1, "assignee": "", "createdAt": "2026-09-03T11:00:00.000Z" }
+  ]
+}
