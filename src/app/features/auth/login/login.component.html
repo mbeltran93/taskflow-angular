@@ -1,0 +1,28 @@
+<div class="login-page">
+  <form class="login-card" [formGroup]="form" (ngSubmit)="submit()">
+    <h1>TaskFlow</h1>
+    <p class="subtitle">Iniciar sesion</p>
+
+    <label for="username">Usuario</label>
+    <input id="username" type="text" formControlName="username" autocomplete="username" placeholder="ej: mbeltran" />
+
+    <label for="password">Contrasena</label>
+    <input
+      id="password"
+      type="password"
+      formControlName="password"
+      autocomplete="current-password"
+      placeholder="********"
+    />
+
+    @if (errorMessage()) {
+      <p class="error">{{ errorMessage() }}</p>
+    }
+
+    <button type="submit" [disabled]="form.invalid || loading()">
+      {{ loading() ? 'Ingresando...' : 'Ingresar' }}
+    </button>
+
+    <p class="hint">Usuarios de prueba: <strong>mbeltran / demo1234</strong> o <strong>ana / demo1234</strong></p>
+  </form>
+</div>
