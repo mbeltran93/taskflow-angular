@@ -1,0 +1,19 @@
+<div class="task-card">
+  <div class="task-card-header">
+    <h4>{{ task.title }}</h4>
+  </div>
+
+  @if (task.description) {
+    <p class="task-description">{{ task.description }}</p>
+  }
+
+  <div class="task-card-footer">
+    @if (task.assignee) {
+      <span class="assignee">{{ task.assignee }}</span>
+    }
+    <div class="task-card-actions">
+      <button type="button" class="secondary" (click)="edit.emit(task)">Editar</button>
+      <button type="button" class="danger" (click)="remove.emit(task)">Eliminar</button>
+    </div>
+  </div>
+</div>

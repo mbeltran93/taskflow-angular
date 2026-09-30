@@ -1,0 +1,45 @@
+.task-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+  padding: 0.75rem;
+  cursor: grab;
+
+  h4 {
+    font-size: 0.9rem;
+  }
+}
+
+.task-description {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0.35rem 0;
+  white-space: pre-line;
+}
+
+.task-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+
+  .assignee {
+    font-size: 0.72rem;
+    background: var(--color-bg);
+    border-radius: 999px;
+    padding: 0.15rem 0.55rem;
+    color: var(--color-text-muted);
+  }
+
+  .task-card-actions {
+    display: flex;
+    gap: 0.35rem;
+    margin-left: auto;
+
+    button {
+      font-size: 0.72rem;
+      padding: 0.25rem 0.5rem;
+    }
+  }
+}

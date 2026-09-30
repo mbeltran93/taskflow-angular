@@ -1,0 +1,54 @@
+<div class="board-page">
+  <div class="board-header">
+    <a routerLink="/projects" class="back-link">&larr; Proyectos</a>
+    @if (project(); as project) {
+      <h2>{{ project.name }}</h2>
+      <p class="board-description">{{ project.description }}</p>
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+
+  @if (loading()) {
+    <p>Cargando tablero...</p>
+  } @else {
+    <div class="board-columns" cdkDropListGroup>
+      @for (column of columns; track column.status) {
+        <section class="board-column">
+          <header class="column-header">
+            <h3>{{ column.label }}</h3>
+            <span class="count">{{ columnsData[column.status].length }}</span>
+          </header>
+
+          <div
+            class="column-list"
+            cdkDropList
+            [cdkDropListData]="columnsData[column.status]"
+            (cdkDropListDropped)="drop($event, column.status)"
+          >
+            @for (task of columnsData[column.status]; track task.id) {
+              <div cdkDrag class="drag-item">
+                <app-task-card [task]="task" (edit)="openEditDialog(task)" (remove)="removeTask(task)" />
+              </div>
+            }
+          </div>
+
+          <button type="button" class="secondary add-task" (click)="openCreateDialog(column.status)">
+            + Agregar tarea
+          </button>
+        </section>
+      }
+    </div>
+  }
+</div>
+
+@if (dialogOpen()) {
+  <app-task-dialog
+    [task]="editingTask()"
+    [defaultStatus]="dialogDefaultStatus()"
+    (save)="saveTask($event)"
+    (close)="closeDialog()"
+  />
+}
