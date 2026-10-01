@@ -1,0 +1,413 @@
+{
+  "info": {
+    "_postman_id": "f3b2a7d2-6b3b-4e9a-9a3a-taskflow-mock-api",
+    "name": "TaskFlow - Backend mock (json-server)",
+    "description": "Prueba directa del backend mock de TaskFlow (json-server sobre db.json), sin pasar por la UI de Angular: login simulado y CRUD completo de projects y tasks.\n\nRequisitos:\n1. Levantar el backend con `npm run api` (puerto 3000) desde la raiz del repo `taskflow-angular`.\n2. Importar esta coleccion en Postman (o correrla con newman).\n3. Correr la carpeta \"1. Auth (login simulado)\" primero para completar la variable `userId`, y despues el resto de las carpetas en orden: se van encadenando con variables de coleccion (`projectId`, `taskId`) que cada request de creacion completa automaticamente via un script \"Post-response\".\n\nTodas las requests de escritura (POST/PUT/PATCH/DELETE) se ejecutan contra registros creados por la propia coleccion, asi que correrla de punta a punta no deja basura ni modifica los usuarios/proyectos/tareas de la semilla original.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "userId", "value": "", "type": "string" },
+    { "key": "projectId", "value": "", "type": "string" },
+    { "key": "taskId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Auth (login simulado)",
+      "description": "TaskFlow no tiene un endpoint /login propio: el login de la app hace un GET a /users filtrando por username+password. Si hay un match, el frontend genera un token falso (btoa) y lo guarda en localStorage. Aca replicamos ese mismo GET.",
+      "item": [
+        {
+          "name": "Login OK (mbeltran / demo1234)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('devuelve exactamente 1 usuario', () => pm.expect(body.length).to.eql(1));",
+                  "pm.test('el usuario tiene id, username y name', () => {",
+                  "  pm.expect(body[0]).to.have.property('id');",
+                  "  pm.expect(body[0]).to.have.property('username', 'mbeltran');",
+                  "  pm.expect(body[0]).to.have.property('name');",
+                  "});",
+                  "if (body[0]) pm.collectionVariables.set('userId', body[0].id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users?username=mbeltran&password=demo1234",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                { "key": "username", "value": "mbeltran" },
+                { "key": "password", "value": "demo1234" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login con password incorrecta -> 0 resultados",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK (json-server siempre responde 200, incluso sin matches)', () => pm.response.to.have.status(200));",
+                  "pm.test('no hay ningun usuario que matchee', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.length).to.eql(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users?username=mbeltran&password=password-incorrecta",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                { "key": "username", "value": "mbeltran" },
+                { "key": "password", "value": "password-incorrecta" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Projects",
+      "item": [
+        {
+          "name": "Listar todos los proyectos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('responde un array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/projects", "host": ["{{baseUrl}}"], "path": ["projects"] }
+          }
+        },
+        {
+          "name": "Crear proyecto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test('devuelve el proyecto creado con id', () => pm.expect(body).to.have.property('id'));",
+                  "pm.test('conserva el nombre enviado', () => pm.expect(body.name).to.eql('Proyecto de prueba (Postman)'));",
+                  "pm.collectionVariables.set('projectId', body.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Proyecto de prueba (Postman)\",\n  \"description\": \"Creado por la coleccion de Postman\",\n  \"ownerId\": {{userId}},\n  \"createdAt\": \"{{$isoTimestamp}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/projects", "host": ["{{baseUrl}}"], "path": ["projects"] }
+          }
+        },
+        {
+          "name": "Obtener proyecto por id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('id coincide con projectId', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(String(body.id)).to.eql(String(pm.collectionVariables.get('projectId')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/projects/{{projectId}}", "host": ["{{baseUrl}}"], "path": ["projects", "{{projectId}}"] }
+          }
+        },
+        {
+          "name": "Editar proyecto (PUT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('el nombre quedo actualizado', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.name).to.eql('Proyecto de prueba (editado por Postman)');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Proyecto de prueba (editado por Postman)\",\n  \"description\": \"Descripcion actualizada\",\n  \"ownerId\": {{userId}},\n  \"createdAt\": \"{{$isoTimestamp}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/projects/{{projectId}}", "host": ["{{baseUrl}}"], "path": ["projects", "{{projectId}}"] }
+          }
+        },
+        {
+          "name": "Editar descripcion de proyecto (PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('solo cambio la descripcion', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.description).to.eql('Descripcion parcheada');",
+                  "  pm.expect(body.name).to.eql('Proyecto de prueba (editado por Postman)');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"description\": \"Descripcion parcheada\"\n}" },
+            "url": { "raw": "{{baseUrl}}/projects/{{projectId}}", "host": ["{{baseUrl}}"], "path": ["projects", "{{projectId}}"] }
+          }
+        },
+        {
+          "name": "Borrar proyecto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/projects/{{projectId}}", "host": ["{{baseUrl}}"], "path": ["projects", "{{projectId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Tasks",
+      "item": [
+        {
+          "name": "Crear proyecto para las tareas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('projectId', body.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Proyecto para tareas (Postman)\",\n  \"description\": \"Usado por la carpeta de Tasks\",\n  \"ownerId\": {{userId}},\n  \"createdAt\": \"{{$isoTimestamp}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/projects", "host": ["{{baseUrl}}"], "path": ["projects"] },
+            "description": "Las tareas de TaskFlow siempre pertenecen a un proyecto (`projectId`), asi que esta carpeta crea su propio proyecto descartable en vez de depender de uno que ya exista."
+          }
+        },
+        {
+          "name": "Crear tarea",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test('queda en TODO', () => pm.expect(body.status).to.eql('TODO'));",
+                  "pm.collectionVariables.set('taskId', body.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectId\": {{projectId}},\n  \"title\": \"Tarea de prueba (Postman)\",\n  \"description\": \"Creada por la coleccion de Postman\",\n  \"status\": \"TODO\",\n  \"order\": 0,\n  \"assignee\": \"\",\n  \"createdAt\": \"{{$isoTimestamp}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/tasks", "host": ["{{baseUrl}}"], "path": ["tasks"] }
+          }
+        },
+        {
+          "name": "Listar tareas del proyecto (ordenadas)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('incluye la tarea creada', () => {",
+                  "  const body = pm.response.json();",
+                  "  const ids = body.map((t) => String(t.id));",
+                  "  pm.expect(ids).to.include(String(pm.collectionVariables.get('taskId')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tasks?projectId={{projectId}}&_sort=order",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"],
+              "query": [
+                { "key": "projectId", "value": "{{projectId}}" },
+                { "key": "_sort", "value": "order" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mover tarea a IN_PROGRESS (PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('status actualizado', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.status).to.eql('IN_PROGRESS');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"IN_PROGRESS\",\n  \"order\": 0\n}" },
+            "url": { "raw": "{{baseUrl}}/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}"] }
+          }
+        },
+        {
+          "name": "Editar tarea completa (PUT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('titulo actualizado', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.title).to.eql('Tarea de prueba (editada por Postman)');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectId\": {{projectId}},\n  \"title\": \"Tarea de prueba (editada por Postman)\",\n  \"description\": \"Descripcion actualizada\",\n  \"status\": \"IN_PROGRESS\",\n  \"order\": 0,\n  \"assignee\": \"QA Postman\",\n  \"createdAt\": \"{{$isoTimestamp}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}"] }
+          }
+        },
+        {
+          "name": "Borrar tarea",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}"] }
+          }
+        },
+        {
+          "name": "Borrar proyecto usado para las tareas (limpieza)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/projects/{{projectId}}", "host": ["{{baseUrl}}"], "path": ["projects", "{{projectId}}"] },
+            "description": "Deja el db.json tal como estaba: borra el proyecto descartable creado al principio de esta carpeta (lo que de paso limpia tambien la tarea que ya borramos arriba)."
+          }
+        }
+      ]
+    }
+  ]
+}
