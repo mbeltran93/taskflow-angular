@@ -1,5 +1,7 @@
 # TaskFlow (Angular)
 
+[![CI](https://github.com/mbeltran93/taskflow-angular/actions/workflows/ci.yml/badge.svg)](https://github.com/mbeltran93/taskflow-angular/actions/workflows/ci.yml)
+
 Tablero de tareas estilo Trello/Jira reducido, construido como proyecto de portafolio en **Angular 19** con TypeScript. Es el frontend de la serie "TaskFlow": el mismo dominio (usuarios, proyectos y tareas en columnas TODO / IN_PROGRESS / DONE) implementado en distintas tecnologias. Este repo es autocontenible: incluye su propio backend mock con `json-server`.
 
 ## Que hace
